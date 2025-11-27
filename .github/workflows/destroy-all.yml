@@ -1,37 +1,19 @@
-name: Deploy all services (ECS)
+name: Destroy all services on EC2
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Stop and remove containers via SSH
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Force new deployment for catalogs
-        run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service catalogs-service \
-            --force-new-deployment
-
-      - name: Force new deployment for sales
-        run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service sales-service \
-            --force-new-deployment
-
-      - name: Force new deployment for notifications
-        run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service notifications-service \
-            --force-new-deployment
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/examen2
+            docker compose down

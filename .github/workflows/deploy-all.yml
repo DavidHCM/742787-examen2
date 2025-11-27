@@ -1,4 +1,4 @@
-name: Deploy all services (ECS)
+name: Deploy all services on EC2
 
 on:
   workflow_dispatch:
@@ -15,23 +15,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Force new deployment for catalogs
+      - name: Prepare ECR login data
+        id: ecr
         run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service catalogs-service \
-            --force-new-deployment
+          ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+          REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
 
-      - name: Force new deployment for sales
-        run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service sales-service \
-            --force-new-deployment
+          echo "registry=$REGISTRY" >> $GITHUB_OUTPUT
+          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
 
-      - name: Force new deployment for notifications
-        run: |
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service notifications-service \
-            --force-new-deployment
+      - name: Deploy via SSH to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/examen2
+            echo "${{ steps.ecr.outputs.password }}" | docker login \
+              --username AWS \
+              --password-stdin ${{ steps.ecr.outputs.registry }}
+
+            docker compose pull
+            docker compose up -d
