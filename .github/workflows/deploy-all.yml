@@ -33,9 +33,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /opt/examen2
+
             echo "${{ steps.ecr.outputs.password }}" | docker login \
               --username AWS \
               --password-stdin ${{ steps.ecr.outputs.registry }}
 
-            docker compose pull
-            docker compose up -d
+            docker-compose pull
+            docker-compose up -d
