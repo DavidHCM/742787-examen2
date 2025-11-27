@@ -1,10 +1,6 @@
 name: Build & Deploy sales
 
 on:
-  push:
-    paths:
-      - 'sales/**'
-      - '.github/workflows/sales.yml'
   workflow_dispatch:
 
 jobs:

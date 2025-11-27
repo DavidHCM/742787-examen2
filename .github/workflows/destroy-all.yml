@@ -1,10 +1,10 @@
-name: Destroy all ECS services
+name: Deploy all services (ECS)
 
 on:
   workflow_dispatch:
 
 jobs:
-  destroy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,31 +15,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Scale services to 0
+      - name: Force new deployment for catalogs
         run: |
           aws ecs update-service \
             --cluster EXAMEN2_CLUSTER \
             --service catalogs-service \
-            --desired-count 0
-          aws ecs update-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service sales-service \
-            --desired-count 0
-          aws ecs update-service \
-            --cluster notifications-service \
-            --desired-count 0
+            --force-new-deployment
 
-      - name: Delete services
+      - name: Force new deployment for sales
         run: |
-          aws ecs delete-service \
-            --cluster EXAMEN2_CLUSTER \
-            --service catalogs-service \
-            --force
-          aws ecs delete-service \
+          aws ecs update-service \
             --cluster EXAMEN2_CLUSTER \
             --service sales-service \
-            --force
-          aws ecs delete-service \
+            --force-new-deployment
+
+      - name: Force new deployment for notifications
+        run: |
+          aws ecs update-service \
             --cluster EXAMEN2_CLUSTER \
             --service notifications-service \
-            --force
+            --force-new-deployment

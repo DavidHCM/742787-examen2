@@ -1,10 +1,6 @@
 name: Build & Deploy notifications
 
 on:
-  push:
-    paths:
-      - 'notifications/**'
-      - '.github/workflows/notifications.yml'
   workflow_dispatch:
 
 jobs:
