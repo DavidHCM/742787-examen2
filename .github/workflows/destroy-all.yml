@@ -1,0 +1,45 @@
+name: Destroy all ECS services
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Scale services to 0
+        run: |
+          aws ecs update-service \
+            --cluster EXAMEN2_CLUSTER \
+            --service catalogs-service \
+            --desired-count 0
+          aws ecs update-service \
+            --cluster EXAMEN2_CLUSTER \
+            --service sales-service \
+            --desired-count 0
+          aws ecs update-service \
+            --cluster notifications-service \
+            --desired-count 0
+
+      - name: Delete services
+        run: |
+          aws ecs delete-service \
+            --cluster EXAMEN2_CLUSTER \
+            --service catalogs-service \
+            --force
+          aws ecs delete-service \
+            --cluster EXAMEN2_CLUSTER \
+            --service sales-service \
+            --force
+          aws ecs delete-service \
+            --cluster EXAMEN2_CLUSTER \
+            --service notifications-service \
+            --force
