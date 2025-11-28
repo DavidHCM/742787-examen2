@@ -18,6 +18,6 @@ app.use("/notificaciones", notificationsRouter);
 
 app.listen(ENV.port, () => {
   console.log(
-    `notifications-service escuchando en http://localhost:${ENV.port} (env=${ENV.nodeEnv})`
+    `notifications en http://localhost:${ENV.port} (env=${ENV.nodeEnv})`
   );
 });
